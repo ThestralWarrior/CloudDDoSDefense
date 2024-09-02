@@ -22,7 +22,7 @@ public class TCPListener extends Thread {
                 handleSocket(socket);
             }
         } catch(Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println("Error while trying to listen to TCP.");
         }
     }
     public void handleSocket(Socket socket) {

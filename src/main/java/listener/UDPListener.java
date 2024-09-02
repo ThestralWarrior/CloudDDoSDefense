@@ -25,7 +25,7 @@ public class UDPListener extends Thread {
                 handlePacket(packet);
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            System.err.println("Error while trying to listen to UDP.");
         }
     }
     public void handlePacket(DatagramPacket packet) {

@@ -18,7 +18,7 @@ public class UDPSimulator {
             socket.send(packet);
             System.out.println("Packet sent to " + SERVER_ADDRESS + ":" + SERVER_PORT);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error while performing UDP simulation.");
         } finally {
             if (socket != null && !socket.isClosed()) {
                 socket.close();
