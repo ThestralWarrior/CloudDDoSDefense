@@ -6,15 +6,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UdpFloodDetector implements AttackDetector {
     private static final int THRESHOLD = 10;
-    private static final Map<String, Integer> trafficCount = new ConcurrentHashMap<>();
+    private static final int RATE_LIMIT_MS = 1000;
+    private static final Map<String, TrafficInfo> trafficMap = new ConcurrentHashMap<>();
     private final AtomicBoolean attackDetected = new AtomicBoolean(false);
     @Override
     public void analyzePacket(String ipAddress, String protocol, int packetSize) {
         if("UDP".equalsIgnoreCase(protocol)) {
-            int count = trafficCount.getOrDefault(ipAddress, 0) + 1;
-            trafficCount.put(ipAddress, count);
-            if(count > THRESHOLD) {
-                attackDetected.set(true);
+            TrafficInfo info = trafficMap.computeIfAbsent(ipAddress, k -> new TrafficInfo());
+            long currentTime = System.currentTimeMillis();
+            synchronized (info) {
+                if(currentTime - info.timestamp > RATE_LIMIT_MS) {
+                    info.timestamp = currentTime;
+                    info.count = 1;
+                } else {
+                    info.count++;
+                }
+                if(info.count > THRESHOLD) {
+                    attackDetected.set(true);
+                }
             }
         }
     }
@@ -27,6 +36,6 @@ public class UdpFloodDetector implements AttackDetector {
     @Override
     public void reset() {
         attackDetected.set(false);
-        trafficCount.clear();
+        trafficMap.clear();
     }
 }
