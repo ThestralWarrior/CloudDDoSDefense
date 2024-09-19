@@ -9,17 +9,16 @@ public class DetectionEngine {
     DetectionEngine(List<AttackDetector> attackDetectors) {
         this.attackDetectors = attackDetectors;
     }
-    public void runAnalysis(String ipAddress, String protocol, int packetSize) {
+    public boolean runAnalysis(String ipAddress, String protocol, int packetSize) {
+        if(Mitigation.isBlocked(ipAddress)) return true;
         for(AttackDetector attackDetector: attackDetectors) {
             attackDetector.analyzePacket(ipAddress, protocol, packetSize);
             if(attackDetector.isAttackDetected()) {
-                takeMitigationAction();
-                break;
+                Mitigation.mitigate(ipAddress); // made changes
+                return true;
             }
         }
-    }
-    public void takeMitigationAction() {
-        System.out.println("Mitigating attack.");
+        return false;
     }
     public void resetDetectors() {
         for(AttackDetector attackDetector: attackDetectors) {
