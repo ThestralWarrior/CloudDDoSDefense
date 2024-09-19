@@ -1,6 +1,7 @@
 package listener;
 
 import core.DetectionEngine;
+import core.Mitigation;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -30,8 +31,15 @@ public class UDPListener extends Thread {
     }
     public void handlePacket(DatagramPacket packet) {
         String ipAddress = packet.getAddress().getHostAddress();
-        int packetSize = packet.getLength();
-        System.out.println("Received packet: " + packet);
-        engine.runAnalysis(ipAddress, "UDP", packetSize);
+        if(Mitigation.isBlocked(ipAddress)) {
+            System.out.println("Received packet from blocked IP " + ipAddress + ". Ignoring packet.");
+        } else {
+            int packetSize = packet.getLength();
+            String message = new String(packet.getData(), 0, packetSize);
+            boolean attackDetected = engine.runAnalysis(ipAddress, "UDP", packetSize);
+            if (attackDetected) {
+                System.out.println("IP Address " + ipAddress + " has been blocked. Ignoring packet.");
+            } else System.out.println("Received packet: " + packet + ", Message: " + message);
+        }
     }
 }
